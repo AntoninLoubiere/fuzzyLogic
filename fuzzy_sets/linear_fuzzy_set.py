@@ -12,8 +12,12 @@ APPROXIMATIONS = 10 ** -10
 class LinearFuzzySet(BaseFuzzySet):
 
     def belongs_value(self, x: float) -> float:
-        if len(self.points) < 2:
+        if len(self.points) < 1:
             return 0
+
+        elif len(self.points) == 1:
+            return self.points[0].y
+
         if x < self.min:
             x = self.min
         elif x > self.max:

@@ -1,3 +1,4 @@
+from fuzzy_parser import parse_set, ParseInfo
 from fuzzy_sets.fuzzy_set import BaseFuzzySet
 
 
@@ -17,3 +18,8 @@ class LinguisticValue:
 
     def __repr__(self):
         return f"<LinguisticValue name={self.name}; set={self.set}>"
+
+    @classmethod
+    def load_from_data(cls, parse_info: ParseInfo, name: str, data: str) -> 'LinguisticValue':
+        result = cls(name, parse_set(parse_info, data))
+        return result

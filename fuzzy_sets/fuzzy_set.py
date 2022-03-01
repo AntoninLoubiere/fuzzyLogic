@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from itertools import zip_longest
 
+from fuzzy_parser import parse_assert
 from points import Point
 
 
@@ -105,3 +106,18 @@ class BaseFuzzySet:
 
     def __and__(self, other):
         raise NotImplementedError()
+
+    @classmethod
+    def load_from_data(cls, data: str) -> BaseFuzzySet:
+        points: list[Point] = []
+
+        for p in data.split(';'):
+            coord = p.split(',')
+            parse_assert(len(coord) == 2, "Point should have exactly 2 coordinates.")
+            points.append(Point(float(coord[0].strip()), float(coord[1].strip())))
+
+        result = cls(min(points).x, max(points).x)
+        for p in points:
+            result.add_point(p)
+
+        return result

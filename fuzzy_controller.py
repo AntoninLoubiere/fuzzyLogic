@@ -1,8 +1,15 @@
+from __future__ import annotations
+
+from os import PathLike
 from typing import Optional
 
+import yaml
+
+from fuzzy_parser import assert_type, dict_el, dict_loop, list_loop, ParseInfo
 from fuzzy_sets.fuzzy_set import BaseFuzzySet
 from rules.rules import FuzzyRule
 from rules.variables import LinguisticVariable
+
 
 class FuzzyController:
 
@@ -41,3 +48,26 @@ class FuzzyController:
 
     def __repr__(self):
         return f"<FuzzyController rules={self.rules}; variables={self.variables}>"
+
+    @classmethod
+    def load_from_file(cls, file_path: str | PathLike[str]) -> 'FuzzyController':
+        with open(file_path) as fir:
+            data: dict = yaml.load(fir, yaml.FullLoader)
+
+        assert_type(data, dict)
+        parse_info = ParseInfo(
+            version=dict_el(data, 'version', int, 0),
+            type=dict_el(data, 'type', str, 'linear')
+        )
+
+        result = cls()
+
+        variables = dict_el(data, 'variables', dict, {})
+        for name, var in dict_loop(variables, dict):
+            result.add_variable(LinguisticVariable.load_from_data(parse_info, name, var))
+
+        rules = dict_el(data, 'rules', list, [])
+        for rule in list_loop(rules, dict):
+            result.add_rule(FuzzyRule.load_from_data(parse_info, result.variables, rule))
+
+        return result

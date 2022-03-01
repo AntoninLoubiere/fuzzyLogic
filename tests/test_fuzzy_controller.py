@@ -1,11 +1,12 @@
 import unittest
 
-from fuzzy_sets.linear_fuzzy_set_helpers import left_trapeze_set, trapeze_set, right_trapeze_set
+from fuzzy_controller import FuzzyController
+from fuzzy_sets.linear_fuzzy_set_helpers import left_trapeze_set, right_trapeze_set, trapeze_set
+from points import Point
 from rules.fuzzy_expression import fe_name
 from rules.rules import FuzzyRule
 from rules.values import LinguisticValue
 from rules.variables import LinguisticVariable
-from fuzzy_controller import FuzzyController
 
 
 class TestFuzzyController(unittest.TestCase):
@@ -47,7 +48,7 @@ class TestFuzzyController(unittest.TestCase):
 
     def test_controller(self):
         self.assertEqual(self.controller.rules, [self.rule1, self.rule2, self.rule3, self.rule4])
-        self.assertEqual(self.controller.variables,  {
+        self.assertEqual(self.controller.variables, {
             'temperature': self.temperature,
             'luminosity': self.luminosity,
             'store_height': self.store_height
@@ -61,6 +62,38 @@ class TestFuzzyController(unittest.TestCase):
         self.assertEqual(self.controller.resolve(
             {'temperature': 16, 'luminosity': 24_000}
         ), {'store_height': 68.52931648850017})
+
+
+class TestFuzzyControllerImport(unittest.TestCase):
+
+    def test_import(self):
+        controller = FuzzyController.load_from_file('./fuzzy_controller.fzc')
+        self.assertEqual(len(controller.variables), 3)
+        self.assertIn('temperature', controller.variables)
+        self.assertIn('luminosity', controller.variables)
+        self.assertIn('store_height', controller.variables)
+        temp = controller.variables['temperature']
+        self.assertEqual(temp.min, 0)
+        self.assertEqual(temp.max, 30)
+        self.assertEqual(temp.values[0].name, 'cold')
+        self.assertEqual(temp.values[1].name, 'fresh')
+        self.assertEqual(temp.values[2].name, 'good')
+        self.assertEqual(temp.values[3].name, 'hot')
+        self.assertEqual(temp.values[0].set.points[0], Point(10, 1))
+
+        self.assertEqual(len(controller.rules), 10)
+
+        rule = controller.rules[0]
+        self.assertEqual(len(rule.premises), 1)
+        self.assertEqual(len(rule.conclusions), 1)
+
+        rule = controller.rules[2]
+        self.assertEqual(rule.premises[0].variable.name, 'temperature')
+        self.assertEqual(rule.premises[0].value.name, 'fresh')
+        self.assertEqual(rule.premises[1].variable.name, 'luminosity')
+        self.assertEqual(rule.premises[1].value.name, 'medium')
+        self.assertEqual(rule.conclusions[0].variable.name, 'store_height')
+        self.assertEqual(rule.conclusions[0].value.name, 'up')
 
 
 if __name__ == '__main__':

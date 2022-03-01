@@ -1,7 +1,9 @@
 import math
 
+from fuzzy_parser import dict_el, dict_loop, ParseInfo
 from fuzzy_sets.fuzzy_set import BaseFuzzySet
 from rules.fuzzy_expression import FuzzyExpression
+from rules.variables import LinguisticVariable
 
 
 class FuzzyRule:
@@ -20,13 +22,19 @@ class FuzzyRule:
             else:
                 return {c.variable.name: c.value.set * 0 for c in self.conclusions}
 
-        if degree:
-            return {c.variable.name: c.value.set * degree for c in self.conclusions}
-        else:
-            return {c.variable.name: c.value.set * degree for c in self.conclusions}
+        return {c.variable.name: c.value.set * degree for c in self.conclusions}
 
     def __str__(self):
         return ' AND '.join((str(p) for p in self.premises)) + " THEN " + 'AND'.join((str(c) for c in self.conclusions))
 
     def __repr__(self):
         return self.__str__()
+
+    @classmethod
+    def load_from_data(cls, pi: ParseInfo, vars: dict[str, LinguisticVariable], data: dict) -> 'FuzzyRule':
+        return cls(
+            [FuzzyExpression.load_from_data(pi, vars, name, value) for name, value in
+             dict_loop(dict_el(data, 'conditions', dict), str)],
+            [FuzzyExpression.load_from_data(pi, vars, name, value) for name, value in
+             dict_loop(dict_el(data, 'actions', dict), str)]
+        )

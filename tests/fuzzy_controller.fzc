@@ -1,0 +1,87 @@
+version: 1
+type: linear
+variables:
+  temperature:
+    min: 0
+    max: 30
+    values:
+      cold: 10,1; 12,0
+      fresh: 10,0; 12,1; 15,1; 17,0
+      good: 13,0; 17,1; 20,1; 25,0
+      hot: 20,0; 28,1
+
+  luminosity:
+    min: 0
+    max: 100_000
+    values:
+      dark: 20_000,1; 30_000,0
+      medium: 20_000,0; 30_000,1; 60_000,1; 85_000,0
+      light: 60_000,0; 80_000,1
+
+  store_height:
+    min: 0
+    max: 105
+    values:
+      down: 25,1; 40,0
+      middle: 25,0; 40,1; 85,1; 100,0
+      up: 85,0; 100,1
+
+rules:
+  - conditions:
+      temperature: cold
+    actions:
+      store_height: up
+
+  - conditions:
+      temperature: fresh
+      luminosity: dark
+    actions:
+      store_height: up
+
+  - conditions:
+      temperature: fresh
+      luminosity: medium
+    actions:
+      store_height: up
+
+  - conditions:
+      temperature: fresh
+      luminosity: light
+    actions:
+      store_height: middle
+
+  - conditions:
+      temperature: good
+      luminosity: dark
+    actions:
+      store_height: up
+
+  - conditions:
+      temperature: good
+      luminosity: medium
+    actions:
+      store_height: middle
+
+  - conditions:
+      temperature: good
+      luminosity: light
+    actions:
+      store_height: middle
+
+  - conditions:
+      temperature: hot
+      luminosity: dark
+    actions:
+      store_height: middle
+
+  - conditions:
+      temperature: hot
+      luminosity: medium
+    actions:
+      store_height: down
+
+  - conditions:
+      temperature: hot
+      luminosity: light
+    actions:
+      store_height: down
